@@ -1,0 +1,206 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  
+   engineType = "binary" 
+}
+
+datasource db {
+  provider = "postgresql"
+  
+}
+// ----------------------------------------------------
+// ENUMS (Roles, States, Visibility)
+// ----------------------------------------------------
+
+enum Role {
+  FOUNDER
+  INVESTOR
+  ADMIN
+}
+
+enum Stage {
+  IDEA
+  PRESEED
+  SEED
+  
+}
+//Add more stages as needed (e.g., SERIES_A, GROWTH)
+
+enum Visibility {
+  PUBLIC    // Visible on the public feed
+  INVITE    // Only visible to invited investors (future)
+  NDA       // Access requires a successful AccessRequest approval
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ----------------------------------------------------
+// 1. AUTH & USER MODELS
+// ----------------------------------------------------
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  passwordHash     String?   // Used for email/password login
+  name             String?
+  
+  // Role-Based Access Control
+  role             Role      @default(FOUNDER)
+  
+  // Profile (One-to-One Relation)
+  profile          Profile?
+  
+  // Relations to other models
+  ideas            IdeaCard[]         // Ideas created by this founder
+  bookmarks        Bookmark[]         // Ideas bookmarked by this investor
+  comments         Comment[]          // Comments made by this user
+  attachments      Attachment[]       // Files uploaded by this user
+  accessRequests   AccessRequest[]    // Access requests made by this investor
+  
+  analyticsEvents  AnalyticsEvent[]
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// Use a separate Profile for better schema evolution (especially for Investor data)
+model Profile {
+  id               String    @id @default(uuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id])
+  bio              String?
+  avatarUrl        String?
+  
+  investorProfile  InvestorProfile?
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model InvestorProfile {
+  id               String    @id @default(uuid())
+  profileId        String    @unique
+  profile          Profile   @relation(fields: [profileId], references: [id])
+  
+  sectors          String[]  // Investment sectors (e.g., ["FinTech", "HealthTech"])
+  minCheck         Int?      // Minimum investment check size
+  maxCheck         Int?      // Maximum investment check size
+  thesis           String?   // Brief investment thesis description
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// ----------------------------------------------------
+// 2. IDEA MANAGEMENT (SPRINT 1 & 2 CORE)
+// ----------------------------------------------------
+
+model IdeaCard {
+  id               String         @id @default(uuid())
+  founderId        String
+  
+  title            String
+  summary          String
+  problem          String
+  solution         String
+  targetMarket     String
+  traction         String?
+  stage            Stage
+  sector           String
+  askAmount        Int?           // Investment ask amount
+  visibility       Visibility     @default(PUBLIC)
+  
+  // Relations
+  founder          User           @relation(fields: [founderId], references: [id])
+  attachments      Attachment[]   // Files in the dataroom
+  comments         Comment[]
+  bookmarks        Bookmark[]
+  accessRequests   AccessRequest[]
+  analyticsEvents  AnalyticsEvent[]
+  
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+// ----------------------------------------------------
+// 3. ACTIONS & DATAROOM (SPRINT 2 & 3)
+// ----------------------------------------------------
+
+model Attachment {
+  id               String    @id @default(uuid())
+  ideaId           String
+  ownerId          String    // Uploader (usually founder)
+  key              String    // S3 object key (CRITICAL)
+  filename         String
+  
+  idea             IdeaCard  @relation(fields: [ideaId], references: [id])
+  owner            User      @relation(fields: [ownerId], references: [id])
+  
+  createdAt        DateTime  @default(now())
+}
+
+model AccessRequest {
+  id               String        @id @default(uuid())
+  ideaId           String
+  investorId       String
+  status           RequestStatus @default(PENDING)
+  
+  idea             IdeaCard      @relation(fields: [ideaId], references: [id])
+  investor         User          @relation(fields: [investorId], references: [id])
+  
+  requestedAt      DateTime      @default(now())
+  approvedAt       DateTime?
+}
+
+model Bookmark {
+  id               String    @id @default(uuid())
+  ideaId           String
+  userId           String    // Investor ID who bookmarked
+  
+  idea             IdeaCard  @relation(fields: [ideaId], references: [id])
+  user             User      @relation(fields: [userId], references: [id])
+  
+  createdAt        DateTime  @default(now())
+  @@unique([ideaId, userId]) // Prevents duplicate bookmarks
+}
+
+model Comment {
+  id               String    @id @default(uuid())
+  ideaId           String
+  userId           String
+  body             String
+  
+  idea             IdeaCard  @relation(fields: [ideaId], references: [id])
+  user             User      @relation(fields: [userId], references: [id])
+  
+  createdAt        DateTime  @default(now())
+}
+
+// ----------------------------------------------------
+// 4. ANALYTICS & AUDIT (SPRINT 2 & 4)
+// ----------------------------------------------------
+
+model AnalyticsEvent {
+  id               String   @id @default(uuid())
+  name             String   // e.g., "IDEA_VIEWED", "ACCESS_REQUESTED"
+  data             Json?    // Store extra context like IP or device info
+  
+ 
+  ideaId           String?
+  userId           String?
+  
+  idea             IdeaCard? @relation(fields: [ideaId], references: [id])
+  user             User?     @relation(fields: [userId], references: [id])
+  
+  createdAt        DateTime @default(now())
+}

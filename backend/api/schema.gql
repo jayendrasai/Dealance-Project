@@ -1,0 +1,121 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AuthPayload {
+  accessToken: String!
+  user: User!
+}
+
+input CreateIdeaInput {
+  askAmount: Float
+  problem: String!
+  sector: String!
+  solution: String!
+  stage: Stage!
+  summary: String!
+  targetMarket: String!
+  title: String!
+  traction: String
+  visibility: Visibility! = PUBLIC
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Idea {
+  askAmount: Float
+  createdAt: DateTime!
+  founder: User!
+  founderId: String!
+  id: ID!
+  problem: String!
+  sector: String!
+  solution: String!
+  stage: Stage!
+  summary: String!
+  targetMarket: String!
+  title: String!
+  traction: String
+  updatedAt: DateTime!
+  visibility: Visibility!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  createIdea(input: CreateIdeaInput!): Idea!
+  deleteIdea(id: String!): Boolean!
+  login(input: LoginInput!): AuthPayload!
+  signup(input: SignupInput!): AuthPayload!
+  updateIdea(input: UpdateIdeaInput!): Idea!
+  updateMyProfile(input: UpdateProfileInput!): User!
+}
+
+type Profile {
+  avatarUrl: String
+  bio: String
+  id: ID!
+}
+
+type Query {
+  idea(id: String!): Idea
+  me: User!
+  myIdeas: [Idea!]!
+  publicFeed: [Idea!]!
+  user(id: String!): User
+}
+
+input SignupInput {
+  email: String!
+  fullName: String!
+  password: String!
+}
+
+"""The stage of the startup idea"""
+enum Stage {
+  IDEA
+  PRESEED
+  SEED
+}
+
+input UpdateIdeaInput {
+  askAmount: Float
+  id: ID!
+  problem: String
+  sector: String
+  solution: String
+  stage: Stage
+  summary: String
+  targetMarket: String
+  title: String
+  traction: String
+  visibility: Visibility
+}
+
+input UpdateProfileInput {
+  avatarUrl: String
+  bio: String
+  fullName: String
+}
+
+type User {
+  avatarUrl: String
+  bio: String
+  email: String!
+  id: ID!
+  name: String
+  profile: Profile
+}
+
+"""Idea visibility settings"""
+enum Visibility {
+  INVITE
+  NDA
+  PUBLIC
+}

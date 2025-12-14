@@ -1,0 +1,9 @@
+# idea-connect-mvp/pnpm-workspace.yaml
+
+packages:
+  # All applications (mobile)
+  - 'frontend/*'
+  # All services (api)
+  - 'backend/*'
+  # All shared libraries (prisma, auth, types)
+  - 'libs/*'

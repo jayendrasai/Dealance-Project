@@ -1,0 +1,38 @@
+# FROM node:18-alpine
+
+# WORKDIR /usr/src/app
+
+# COPY package.json pnpm-lock.yaml ./
+# COPY backend/api/package.json backend/api/pnpm-lock.yaml ./backend/api/
+
+# RUN pnpm install
+
+# COPY . .
+
+# WORKDIR /usr/src/app/backend/api
+
+#-------------------------------------
+
+FROM node:18-alpine
+
+# Set the working directory inside the container
+WORKDIR /usr/src/app
+
+# 1) Install pnpm globally
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy package files from the build context (which is ./backend/api) 
+# to the current working directory in the container (which is /usr/src/app)
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies inside the container
+RUN pnpm install
+
+# Copy the rest of the application source code (src, prisma, etc.)
+COPY . .
+#COPY ./src ./src
+#COPY ./prisma ./prisma
+#COPY .env .env
+
+# The final WORKDIR is already set above, this line is not strictly needed but harmless
+# WORKDIR /usr/src/app
