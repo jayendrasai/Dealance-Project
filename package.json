@@ -1,6 +1,7 @@
 {
   "name": "Dealance",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,5 +10,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.24.0"
+  "packageManager": "pnpm@10.24.0",
+  "pnpm": {
+    "overrides": {
+      "react": "18.3.1",
+      "react-dom": "18.3.1",
+      "@types/react": "18.3.3",
+      "@types/react-dom": "18.3.0"
+    }
+  },
+  "dependencies": {
+    "react-native-worklets": "^0.7.1"
+  }
 }

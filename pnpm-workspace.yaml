@@ -2,8 +2,9 @@
 
 packages:
   # All applications (mobile)
-  - 'frontend/*'
+  - 'frontend/**'
   # All services (api)
-  - 'backend/*'
+  - 'backend/**'
   # All shared libraries (prisma, auth, types)
   - 'libs/*'
+  - apps/**

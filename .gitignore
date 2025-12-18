@@ -7,6 +7,18 @@ build/
 .env
 .env.*
 
+# Expo / React Native
+.expo/
+.expo-shared/
+android/
+ios/
+
+
+# Android / Gradle
+.gradle/
+build/
+*.keystore
+
 # Logs
 logs/
 *.log
@@ -17,6 +29,7 @@ yarn-error.log*
 
 # OS
 .DS_Store
+Thumbs.db
 
 # IDEs
 .vscode/*
