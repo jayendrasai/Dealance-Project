@@ -20,6 +20,6 @@
     }
   },
   "dependencies": {
-    "react-native-worklets": "^0.7.1"
+    "react-native-reanimated": "~3.15.5"
   }
 }
