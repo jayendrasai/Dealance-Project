@@ -2,35 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthProvider extends ChangeNotifier {
-  static const _storage = FlutterSecureStorage();
-  static const _tokenKey = 'jwt';
+  final _storage = const FlutterSecureStorage();
 
   String? _token;
-  bool _initialized = false;
+  bool _isAuthenticated = false;
 
+  bool get isAuthenticated => _isAuthenticated;
   String? get token => _token;
-  bool get isAuthenticated => _token != null;
-  bool get isInitialized => _initialized;
 
-  AuthProvider() {
-    _loadToken();
-  }
+  Future<void> login(String jwt) async {
+    _token = jwt;
+    _isAuthenticated = true;
 
-  Future<void> _loadToken() async {
-    _token = await _storage.read(key: _tokenKey);
-    _initialized = true;
-    notifyListeners();
-  }
-
-  Future<void> login(String token) async {
-    await _storage.write(key: _tokenKey, value: token);
-    _token = token;
+    await _storage.write(key: 'jwt', value: jwt);
     notifyListeners();
   }
 
   Future<void> logout() async {
-    await _storage.delete(key: _tokenKey);
     _token = null;
+    _isAuthenticated = false;
+
+    await _storage.delete(key: 'jwt');
     notifyListeners();
+  }
+
+  Future<void> tryAutoLogin() async {
+    final storedToken = await _storage.read(key: 'jwt');
+    if (storedToken != null) {
+      _token = storedToken;
+      _isAuthenticated = true;
+      notifyListeners();
+    }
   }
 }
